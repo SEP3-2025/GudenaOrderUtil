@@ -1,5 +1,7 @@
 package com.gudena.payment;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
@@ -10,9 +12,11 @@ import java.time.YearMonth;
 public class PaymentServer {
 
     private final int port;
+    private final ObjectMapper objectMapper;
 
     public PaymentServer(int port) {
         this.port = port;
+        this.objectMapper = new ObjectMapper();
     }
 
     public void start() throws Exception {
@@ -31,27 +35,43 @@ public class PaymentServer {
              InputStream inputStream = clientSocket.getInputStream();
              OutputStream outputStream = clientSocket.getOutputStream()) {
 
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[2048];
             int bytesRead = inputStream.read(buffer);
             if (bytesRead == -1) return;
 
-            String message = new String(buffer, 0, bytesRead, StandardCharsets.UTF_8);
-            System.out.println("Received: " + message);
+            String jsonMessage = new String(buffer, 0, bytesRead, StandardCharsets.UTF_8);
+            System.out.println("Received JSON: " + jsonMessage);
 
-            String[] parts = message.split("\\|");
-            String result = "INVALID";
+            // Deserialize JSON to CreditCardDto
+            CreditCardDto creditCardDto = objectMapper.readValue(jsonMessage, CreditCardDto.class);
 
-            if (parts.length == 6) {
-                String cardNumber = parts[0];
-                String firstName = parts[1];
-                String lastName = parts[2];
-                String cvv = parts[3];
-                int month = Integer.parseInt(parts[4]);
-                int year = Integer.parseInt(parts[5]);
+            String result = "DECLINED";
+
+            if (creditCardDto != null &&
+                creditCardDto.getCardNumber() != null &&
+                creditCardDto.getHolderFullName() != null &&
+                creditCardDto.getCvvCode() != null &&
+                creditCardDto.getExpiryDate() != null) {
+
+                String[] nameParts = creditCardDto.getHolderFullName().split(" ", 2);
+                String firstName = nameParts.length > 0 ? nameParts[0] : "";
+                String lastName = nameParts.length > 1 ? nameParts[1] : "";
+
+                // Parse expiry date (MM/yy)
+                String[] expiryParts = creditCardDto.getExpiryDate().split("/");
+                int month = Integer.parseInt(expiryParts[0]);
+                int year = 2000 + Integer.parseInt(expiryParts[1]);
 
                 CardValidator validator = new CardValidator();
-                boolean valid = validator.validateCard(cardNumber, firstName, lastName, cvv, YearMonth.of(year, month));
-                result = valid ? "VALID" : "INVALID";
+                boolean valid = validator.validateCard(
+                        creditCardDto.getCardNumber(),
+                        firstName,
+                        lastName,
+                        creditCardDto.getCvvCode(),
+                        YearMonth.of(year, month)
+                );
+
+                result = valid ? "APPROVED" : "DECLINED";
             }
 
             outputStream.write(result.getBytes(StandardCharsets.UTF_8));

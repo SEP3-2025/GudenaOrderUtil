@@ -5,7 +5,7 @@ import java.time.YearMonth;
 public class CardValidator {
 
     public boolean validateCard(String cardNumber, String firstName, String lastName, String cvv, YearMonth expiry) {
-        return validateCardNumber(cardNumber) && validateCVV(cvv) && validateExpiry(expiry);
+        return validateCardNumber(cardNumber) && validateCVV(cvv) && validateExpiry(expiry); // change it to card expired
     }
 
     private boolean validateCardNumber(String cardNumber) {
