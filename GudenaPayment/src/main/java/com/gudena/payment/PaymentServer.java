@@ -76,7 +76,7 @@ public class PaymentServer {
 
             outputStream.write(result.getBytes(StandardCharsets.UTF_8));
             outputStream.flush();
-            System.out.println("Response sent: " + result);
+            //System.out.println("Response sent: " + result);
 
         } catch (Exception e) {
             e.printStackTrace();
