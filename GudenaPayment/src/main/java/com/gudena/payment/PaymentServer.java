@@ -40,7 +40,7 @@ public class PaymentServer {
             if (bytesRead == -1) return;
 
             String jsonMessage = new String(buffer, 0, bytesRead, StandardCharsets.UTF_8);
-            System.out.println("Received JSON: " + jsonMessage);
+            //System.out.println("Received JSON: " + jsonMessage);
 
             // Deserialize JSON to CreditCardDto
             CreditCardDto creditCardDto = objectMapper.readValue(jsonMessage, CreditCardDto.class);
