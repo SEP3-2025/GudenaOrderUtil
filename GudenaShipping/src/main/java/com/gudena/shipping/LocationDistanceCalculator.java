@@ -11,7 +11,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class LocationDistanceCalculator {
-    private static final String GOOGLE_API_KEY = "AIzaSyB9ldS8zuvlpA0AiVy2JtlY48bwP0Fev0k";
+    private static final String GOOGLE_API_KEY = "";
 
     public double getDistanceBetweenPostalCodes(String country1, String postalCode1,
                                                 String country2, String postalCode2) throws Exception {
